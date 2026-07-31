@@ -151,11 +151,11 @@ OPENAI_MIGRATION_RULES: Dict[str, Rule] = {
         category=FindingCategory.API_CALL,
         severity=FindingSeverity.MEDIUM,
         automation=AutomationStatus.AUTOMATIC,
-        description="'openai.Image.create()' moved to 'client.images.generate()'.",
-        legacy_pattern="openai.Image.create(...)",
-        target_pattern="client.images.generate(...)",
+        description="Legacy image create, variation, and edit calls moved to explicit image resource methods.",
+        legacy_pattern="openai.Image.create(...) / create_variation(...) / create_edit(...)",
+        target_pattern="client.images.generate(...) / create_variation(...) / edit(...)",
         why_changed="Image creation renamed to '.generate()' for clarity.",
-        migration_advice="Replace 'openai.Image.create' with 'client.images.generate'."
+        migration_advice="Replace create with generate, create_variation with create_variation, and create_edit with edit."
     ),
     "RULE-MODEL-001": Rule(
         id="RULE-MODEL-001",
@@ -163,11 +163,11 @@ OPENAI_MIGRATION_RULES: Dict[str, Rule] = {
         category=FindingCategory.API_CALL,
         severity=FindingSeverity.LOW,
         automation=AutomationStatus.AUTOMATIC,
-        description="'openai.Model.list()' moved to 'client.models.list()'.",
-        legacy_pattern="openai.Model.list()",
-        target_pattern="client.models.list()",
+        description="Legacy model list and retrieve calls moved to the explicit models resource.",
+        legacy_pattern="openai.Model.list() / openai.Model.retrieve()",
+        target_pattern="client.models.list() / client.models.retrieve()",
         why_changed="Models management namespace updated.",
-        migration_advice="Replace 'openai.Model.list()' with 'client.models.list()'."
+        migration_advice="Replace Model.list with client.models.list and Model.retrieve with client.models.retrieve."
     ),
     "RULE-EXCEPT-001": Rule(
         id="RULE-EXCEPT-001",
