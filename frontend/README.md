@@ -1,5 +1,11 @@
 # React + Vite
 
+## Lume API Configuration
+
+The frontend reads the backend API base URL from `VITE_API_URL`.
+
+Copy `frontend/.env.example` to a local `.env` or `.env.local` file and set the value for the environment where the frontend runs. If the variable is not set, the app uses `http://localhost:8000/api` for local development.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

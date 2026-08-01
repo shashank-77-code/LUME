@@ -13,7 +13,12 @@ from app.analyzer.ast_engine import analyze_code, Finding
 from app.transformer.codemod import transform_source_code
 from app.explainer.ai_engine import generate_explanation, ExplanationResult
 from app.reporter.generator import generate_report, generate_markdown_report, ReportData
-from app.scanner.repository_scanner import scan_directory, scan_zip_bytes, ScannedFileResult
+from app.scanner.repository_scanner import (
+    ScannedFileResult,
+    scan_directory,
+    scan_zip_bytes,
+    verify_transformed_code,
+)
 
 app = FastAPI(
     title="Lume Enterprise Migration Platform API",
@@ -43,6 +48,18 @@ class ExplainRequest(BaseModel):
 class FullScanResponse(BaseModel):
     report: ReportData
     files: List[ScannedFileResult]
+    verification: Dict[str, Any]
+
+def summarize_verification(files: List[ScannedFileResult]) -> Dict[str, Any]:
+    verified_files = sum(1 for file in files if file.verification.valid)
+    failed_files = len(files) - verified_files
+    return {
+        "total_files": len(files),
+        "verified_files": verified_files,
+        "failed_files": failed_files,
+        "all_valid": failed_files == 0,
+        "scope": "syntax_only",
+    }
 
 @app.get("/api/health")
 def health_check():
@@ -88,7 +105,8 @@ def scan_sample(sample_id: str):
                 original_code=code,
                 transformed_code=transformed_code,
                 diff_text=diff_text,
-                findings=findings
+                findings=findings,
+                verification=verify_transformed_code(sample_id, transformed_code),
             )
         ]
 
@@ -97,7 +115,11 @@ def scan_sample(sample_id: str):
         all_findings.extend(sf.findings)
 
     report = generate_report(len(scanned_files), all_findings)
-    return FullScanResponse(report=report, files=scanned_files)
+    return FullScanResponse(
+        report=report,
+        files=scanned_files,
+        verification=summarize_verification(scanned_files),
+    )
 
 @app.post("/api/scan/upload", response_model=FullScanResponse)
 async def scan_upload(file: UploadFile = File(...)):
@@ -113,7 +135,11 @@ async def scan_upload(file: UploadFile = File(...)):
         all_findings.extend(sf.findings)
 
     report = generate_report(len(scanned_files), all_findings)
-    return FullScanResponse(report=report, files=scanned_files)
+    return FullScanResponse(
+        report=report,
+        files=scanned_files,
+        verification=summarize_verification(scanned_files),
+    )
 
 @app.post("/api/scan/raw", response_model=FullScanResponse)
 def scan_raw(request: RawScanRequest):
@@ -126,11 +152,16 @@ def scan_raw(request: RawScanRequest):
             original_code=request.code,
             transformed_code=transformed_code,
             diff_text=diff_text,
-            findings=findings
+            findings=findings,
+            verification=verify_transformed_code(request.filename, transformed_code),
         )
     ]
     report = generate_report(1, findings)
-    return FullScanResponse(report=report, files=scanned_files)
+    return FullScanResponse(
+        report=report,
+        files=scanned_files,
+        verification=summarize_verification(scanned_files),
+    )
 
 @app.post("/api/explain", response_model=ExplanationResult)
 def explain_finding_endpoint(request: ExplainRequest):

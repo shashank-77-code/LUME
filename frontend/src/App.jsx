@@ -9,7 +9,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-const API = 'http://localhost:8000/api';
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/+$/, '');
 
 export default function App() {
   const [chapter, setChapter] = useState(0);
@@ -20,6 +20,7 @@ export default function App() {
   const [finding, setFinding] = useState(null);
   const [explanation, setExplanation] = useState(null);
   const [scanning, setScanning] = useState(false);
+  const [verification, setVerification] = useState(null);
   const [modal, setModal] = useState(null);
   const [snippet, setSnippet] = useState('');
 
@@ -33,6 +34,7 @@ export default function App() {
         const d = await r.json();
         setReport(d.report);
         setFiles(d.files);
+        setVerification(d.verification);
         setFileIdx(0);
         if (d.files[0]?.findings[0]) {
           setFinding(d.files[0].findings[0]);
@@ -69,6 +71,7 @@ export default function App() {
       if (r.ok) {
         const d = await r.json();
         setReport(d.report); setFiles(d.files); setChapter(2);
+        setVerification(d.verification);
       }
     } catch (e) { alert(e.message); }
     setScanning(false);
@@ -87,6 +90,7 @@ export default function App() {
       if (r.ok) {
         const d = await r.json();
         setReport(d.report); setFiles(d.files); setChapter(2);
+        setVerification(d.verification);
       }
     } catch (e) { alert(e.message); }
     setScanning(false);
@@ -112,6 +116,8 @@ export default function App() {
 
   const af = files[fileIdx] || null;
   const s = report?.summary || { total_files_scanned: 0, total_findings: 0, readiness_score: 100, critical_count: 0, high_count: 0, medium_count: 0, low_count: 0, automatic_count: 0, manual_review_count: 0 };
+  const v = verification || { total_files: files.length, verified_files: 0, failed_files: 0, all_valid: false, scope: 'syntax_only' };
+  const verificationRate = v.total_files > 0 ? Math.round((v.verified_files / v.total_files) * 100) : 0;
 
   const chapters = ['Understanding', 'System Pulse', 'Transformation', 'Verification', 'Deployment'];
 
@@ -430,7 +436,7 @@ export default function App() {
             <p className="caption" style={{ color: 'var(--accent)', marginBottom: 12 }}>04 — Verification</p>
             <h1 className="headline">Confidence, Not Checklists.</h1>
             <p className="body" style={{ marginTop: 12 }}>
-              Every transformation verified deterministically. No guesswork enters production.
+              Every transformed file is checked with Python syntax parsing. Semantic behavior is not executed or inferred.
             </p>
           </div>
 
@@ -451,9 +457,11 @@ export default function App() {
 
             <div className="verify-step complete">
               <div className="verify-step-num">STEP 03</div>
-              <div className="verify-step-title">Semantic Verification</div>
-              <div className="verify-step-desc">Transformed code produces syntactically valid Python. Import hierarchy verified. Client instantiation confirmed.</div>
-              <div className="verify-indicator"><div className="verify-bar green" style={{ width: '100%' }} /></div>
+              <div className="verify-step-title">Syntax Verification</div>
+              <div className="verify-step-desc">
+                {v.verified_files} of {v.total_files} transformed files are syntactically valid. {v.failed_files} failed parsing. Syntax verification only; semantic correctness is not assessed.
+              </div>
+              <div className="verify-indicator"><div className="verify-bar" style={{ width: `${verificationRate}%`, background: v.failed_files > 0 ? 'var(--red)' : 'var(--green)' }} /></div>
             </div>
 
             <div className="verify-step complete">
@@ -461,6 +469,40 @@ export default function App() {
               <div className="verify-step-title">Migration Health</div>
               <div className="verify-step-desc">Production readiness score: {s.readiness_score}%. All critical and high severity findings have automated resolutions.</div>
               <div className="verify-indicator"><div className="verify-bar accent" style={{ width: `${s.readiness_score}%` }} /></div>
+            </div>
+          </div>
+
+          <div style={{ maxWidth: 900, margin: '28px auto 32px', border: '1px solid var(--line)', borderRadius: 8, padding: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+              <div>
+                <div className="caption">Overall Verification Summary</div>
+                <div className="body" style={{ marginTop: 6 }}>
+                  {v.all_valid ? '✅ Syntax Valid' : '❌ Syntax Invalid'} · Syntax verification only
+                </div>
+              </div>
+              <div className="mono" style={{ color: v.failed_files > 0 ? 'var(--red)' : 'var(--green)' }}>
+                {v.verified_files} verified · {v.failed_files} failed
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gap: 8 }}>
+              {files.map(file => {
+                const result = file.verification;
+                const valid = result?.valid === true;
+                return (
+                  <div key={file.file_path} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start', padding: '10px 0', borderTop: '1px solid var(--line)' }}>
+                    <div className="mono" style={{ color: 'var(--t2)', overflowWrap: 'anywhere' }}>{file.file_path}</div>
+                    <div style={{ textAlign: 'right', color: valid ? 'var(--green)' : 'var(--red)', minWidth: 180 }}>
+                      <div>{valid ? '✅ Syntax Valid' : '❌ Syntax Invalid'}</div>
+                      {!valid && result?.error_message && (
+                        <div className="mono" style={{ color: 'var(--t4)', fontSize: 11, marginTop: 4 }}>
+                          {result.error_message}{result.line_number ? ` · line ${result.line_number}` : ''}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -525,7 +567,7 @@ export default function App() {
                   <div className="timeline-dot" style={{ background: 'var(--accent)' }} />
                   <div className="timeline-content">
                     <div className="timeline-title">Verification Complete</div>
-                    <div className="timeline-meta">All deterministic rules passed</div>
+                    <div className="timeline-meta">{v.verified_files} syntax valid · {v.failed_files} syntax invalid · syntax checks only</div>
                   </div>
                 </div>
               </div>
