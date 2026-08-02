@@ -1,4 +1,5 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 
 import { cn } from '../../lib/utils';
 
@@ -50,6 +51,14 @@ export function Button({
     const anchorProps = { ...props };
     delete anchorProps.disabled;
     delete anchorProps.type;
+
+    if (href.startsWith('/')) {
+      return (
+        <Link className={classes} to={href} {...(anchorProps as Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>)}>
+          {children}
+        </Link>
+      );
+    }
 
     return (
       <a className={classes} href={href} {...(anchorProps as AnchorHTMLAttributes<HTMLAnchorElement>)}>

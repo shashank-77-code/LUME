@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, GitFork, Menu } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 import { navigationItems } from '../../data/landing';
 import { Button } from '../ui/Button';
 import { BrandMark } from '../ui/BrandMark';
 
 export function Header() {
-  const isWorkspace = window.location.pathname.startsWith('/workspace');
+  const location = useLocation();
+  const isWorkspace = location.pathname === '/workspace';
   const [activeSection, setActiveSection] = useState(isWorkspace ? 'workspace' : 'architecture');
   const [isScrolled, setIsScrolled] = useState(() => window.scrollY > 12);
+
+  useEffect(() => {
+    setActiveSection(isWorkspace ? 'workspace' : 'architecture');
+  }, [isWorkspace]);
 
   useEffect(() => {
     const updateScrollState = () => setIsScrolled(window.scrollY > 12);
@@ -38,25 +44,41 @@ export function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 lg:px-9">
       <div className={`mx-auto flex h-16 max-w-[90rem] items-center justify-between rounded-2xl border px-4 backdrop-blur-[12px] transition-[background-color,border-color,box-shadow] duration-200 ease-out sm:px-5 ${isScrolled ? 'border-line/90 bg-surface-base/95 shadow-[0_1rem_3rem_rgb(0_0_0_/_40%)]' : 'border-line bg-surface-base/85 shadow-[0_1rem_3rem_rgb(0_0_0_/_28%)]'}`}>
-        <a
+        <Link
           aria-label="LUME home"
           className="group inline-flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange"
-          href={isWorkspace ? '/' : '#top'}
+          to={isWorkspace ? '/' : '#top'}
         >
           <BrandMark className="transition-transform duration-300 group-hover:rotate-45" />
           <span className="font-display text-xl font-bold tracking-[0.12em] text-ink-primary">LUME</span>
-        </a>
+        </Link>
 
         <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
-          {navigationItems.map((item) => (
-            <a
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange ${activeSection === item.href.slice(1) || (item.label === 'Workspace' && isWorkspace) ? 'bg-surface-elevated text-ink-primary shadow-panel' : 'text-ink-muted hover:text-ink-primary'}`}
-              href={item.href.startsWith('#') && isWorkspace ? `/${item.href}` : item.href}
-              key={item.label}
-            >
-              {item.label}
-            </a>
-          ))}
+          {navigationItems.map((item) => {
+            const classes = `rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange ${activeSection === item.href.slice(1) || (item.label === 'Workspace' && isWorkspace) ? 'bg-surface-elevated text-ink-primary shadow-panel' : 'text-ink-muted hover:text-ink-primary'}`;
+
+            if (item.href.startsWith('/')) {
+              return (
+                <Link className={classes} key={item.label} to={item.href}>
+                  {item.label}
+                </Link>
+              );
+            }
+
+            if (isWorkspace) {
+              return (
+                <Link className={classes} key={item.label} to={`/${item.href}`}>
+                  {item.label}
+                </Link>
+              );
+            }
+
+            return (
+              <a className={classes} href={item.href} key={item.label}>
+                {item.label}
+              </a>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2">
