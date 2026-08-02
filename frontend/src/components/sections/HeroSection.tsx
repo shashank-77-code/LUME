@@ -7,7 +7,11 @@ import { Button } from '../ui/Button';
 import { HeroVisual } from '../visual/HeroVisual';
 
 const copyTransition = { duration: 0.65, ease: [0.16, 1, 0.3, 1] as const };
-const typewriterPhrases = ['OpenAI SDKs', 'Anthropic SDKs', 'Gemini SDKs', 'Azure OpenAI', 'Python Projects', 'Legacy SDKs'];
+const typewriterPhrases = ['OpenAI SDKs', 'Anthropic SDKs', 'Azure OpenAI', 'Legacy SDKs'];
+
+function randomDelay(minimum: number, maximum: number) {
+  return Math.round(minimum + Math.random() * (maximum - minimum));
+}
 
 export function HeroSection() {
   const reduceMotion = useReducedMotion();
@@ -17,11 +21,20 @@ export function HeroSection() {
 
   useEffect(() => {
     if (reduceMotion) {
+      setPhraseIndex(0);
+      setTypedPhrase(typewriterPhrases[0]);
+      setTypingPhase('typing');
       return;
     }
 
     const phrase = typewriterPhrases[phraseIndex];
-    const delay = typingPhase === 'typing' && typedPhrase === phrase ? 1400 : typingPhase === 'deleting' && typedPhrase.length === 0 ? 25 : typingPhase === 'deleting' ? 24 : 48;
+    const delay = typingPhase === 'typing' && typedPhrase === phrase
+      ? randomDelay(1200, 1800)
+      : typingPhase === 'deleting' && typedPhrase.length === 0
+        ? 40
+        : typingPhase === 'deleting'
+          ? randomDelay(40, 60)
+          : randomDelay(60, 110);
 
     const timer = window.setTimeout(() => {
       if (typingPhase === 'typing' && typedPhrase === phrase) {
@@ -44,7 +57,7 @@ export function HeroSection() {
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-hero-radial" />
       <div aria-hidden="true" className="hero-grid-mask pointer-events-none absolute inset-x-0 top-0 -z-10 h-full bg-hero-grid bg-[length:4.5rem_4.5rem]" />
 
-      <div className="mx-auto grid min-h-[calc(100svh-5rem)] max-w-[90rem] grid-cols-1 items-center gap-8 px-6 pb-10 pt-6 sm:px-9 md:pb-14 lg:grid-cols-2 lg:gap-4 lg:px-12 lg:pt-8 xl:px-16">
+      <div className="mx-auto grid min-h-[calc(100svh-5rem)] max-w-[90rem] grid-cols-1 items-center gap-8 px-6 pb-10 pt-6 sm:px-9 md:pb-14 lg:-mt-12 lg:grid-cols-2 lg:gap-4 lg:px-12 lg:pt-24 xl:px-16">
         <div className="relative z-10 max-w-2xl lg:pb-12">
           <motion.div
             animate={{ opacity: 1, y: 0 }}
@@ -59,11 +72,11 @@ export function HeroSection() {
           <motion.h1
             animate={{ opacity: 1, y: 0 }}
             aria-live="polite"
-            className="max-w-[13ch] font-display text-[clamp(3rem,5.6vw,5.85rem)] font-extrabold leading-[0.99] tracking-[-0.065em] text-ink-primary dream-glow"
+            className="hero-headline max-w-[13ch] font-display text-[clamp(3rem,5.6vw,5.85rem)] font-extrabold leading-[0.99] tracking-[-0.065em] text-ink-primary"
             initial={{ opacity: 0, y: 20 }}
             transition={{ ...copyTransition, delay: 0.08 }}
           >
-            Migrate <span className="text-brand-gradient bg-clip-text text-transparent">{typedPhrase}</span><span aria-hidden="true" className="typewriter-caret" />.<br />
+            Migrate <span className="hero-typewriter">{typedPhrase}</span><span aria-hidden="true" className="typewriter-caret" />.<br />
             Automatically. Accurately.
           </motion.h1>
 

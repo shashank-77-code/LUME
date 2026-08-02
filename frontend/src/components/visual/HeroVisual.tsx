@@ -1,7 +1,11 @@
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
+import { useRef, useState } from 'react';
+import type { CSSProperties, PointerEvent } from 'react';
 
 import { processNodes, type ProcessNode } from '../../data/landing';
+import { MigrationCoreCanvas } from './MigrationCoreCanvas';
+import type { MigrationCoreCanvasHandle } from './MigrationCoreCanvas';
 
 export interface HeroVisualProps {
   reduceMotion: boolean | null;
@@ -24,55 +28,103 @@ const visualVariants: Variants = {
   },
 };
 
+const engineParticles = [
+  { angle: '-18deg', delay: '-1.2s', duration: '12.5s', radius: '13.5rem', size: '0.22rem', tone: 'ember' },
+  { angle: '24deg', delay: '-5.4s', duration: '14s', radius: '15.5rem', size: '0.16rem', tone: 'blue' },
+  { angle: '68deg', delay: '-7.1s', duration: '11.5s', radius: '12.25rem', size: '0.2rem', tone: 'ember' },
+  { angle: '112deg', delay: '-3.8s', duration: '15.5s', radius: '16.75rem', size: '0.14rem', tone: 'ember' },
+  { angle: '158deg', delay: '-9.6s', duration: '13s', radius: '14.5rem', size: '0.18rem', tone: 'blue' },
+  { angle: '206deg', delay: '-6.2s', duration: '16.5s', radius: '17.5rem', size: '0.15rem', tone: 'ember' },
+  { angle: '244deg', delay: '-2.4s', duration: '10.8s', radius: '11.8rem', size: '0.24rem', tone: 'ember' },
+  { angle: '286deg', delay: '-8.5s', duration: '14.8s', radius: '15rem', size: '0.14rem', tone: 'blue' },
+  { angle: '328deg', delay: '-4.3s', duration: '12.2s', radius: '13.3rem', size: '0.19rem', tone: 'ember' },
+] as const;
+
 export function HeroVisual({ reduceMotion }: HeroVisualProps) {
+  const visualRef = useRef<HTMLDivElement>(null);
+  const coreRef = useRef<MigrationCoreCanvasHandle>(null);
+  const [webglReady, setWebglReady] = useState(false);
+
+  const setEnginePosition = (event: PointerEvent<HTMLDivElement>) => {
+    if (reduceMotion || !visualRef.current) return;
+
+    const bounds = visualRef.current.getBoundingClientRect();
+    const offsetX = (event.clientX - bounds.left) / bounds.width - 0.5;
+    const offsetY = (event.clientY - bounds.top) / bounds.height - 0.5;
+
+    visualRef.current.style.setProperty('--engine-pull-x', `${offsetX * 8}px`);
+    visualRef.current.style.setProperty('--engine-pull-y', `${offsetY * 8}px`);
+    visualRef.current.style.setProperty('--engine-brightness', `${1 + Math.min(Math.hypot(offsetX, offsetY) * 0.16, 0.11)}`);
+    coreRef.current?.setPointer(offsetX, offsetY);
+  };
+
+  const resetEnginePosition = () => {
+    if (!visualRef.current) return;
+    visualRef.current.style.setProperty('--engine-pull-x', '0px');
+    visualRef.current.style.setProperty('--engine-pull-y', '0px');
+    visualRef.current.style.setProperty('--engine-brightness', '1');
+    coreRef.current?.setPointer(0, 0);
+  };
+
+  const pulseEngine = () => {
+    if (!visualRef.current || reduceMotion) return;
+    visualRef.current.dataset.pulsing = 'true';
+    coreRef.current?.pulse();
+    window.setTimeout(() => {
+      if (visualRef.current) delete visualRef.current.dataset.pulsing;
+    }, 700);
+  };
+
   return (
     <motion.div
       animate="visible"
       aria-label="LUME migration process: detect, analyze, transform, and verify"
-      className="hero-visual"
+      className={`hero-visual${webglReady ? ' hero-visual--webgl' : ''}`}
       initial="hidden"
+      onClick={pulseEngine}
+      onPointerLeave={resetEnginePosition}
+      onPointerMove={setEnginePosition}
+      ref={visualRef}
       role="img"
       variants={visualVariants}
     >
-      <svg aria-hidden="true" className="hero-connections" fill="none" viewBox="0 0 720 610">
-        <defs>
-          <filter id="connectionGlow" height="160%" width="160%" x="-30%" y="-30%">
-            <feGaussianBlur result="blur" stdDeviation="3" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        {['M552 90C508 110 492 150 465 182', 'M250 251C315 266 342 285 383 301', 'M544 405C505 384 485 365 453 342', 'M392 480C402 432 410 400 414 355'].map((path) => (
-          <motion.path
-            animate={reduceMotion ? undefined : { strokeDashoffset: [0, -56] }}
-            d={path}
-            filter="url(#connectionGlow)"
-            key={path}
-            stroke="var(--brand-red)"
-            strokeDasharray="4 12"
-            strokeLinecap="round"
-            strokeWidth="1.5"
-            transition={{ duration: 2.2, ease: 'linear', repeat: Infinity }}
-          />
-        ))}
-        <path d="M492 168C606 148 642 241 579 282S487 391 595 448" opacity="0.34" stroke="var(--brand-orange)" strokeDasharray="2 14" strokeWidth="1" />
-        <path d="M347 183C302 211 281 298 327 365S411 473 362 524" opacity="0.24" stroke="var(--hero-blue-strong)" strokeDasharray="2 15" strokeWidth="1" />
-      </svg>
-
       <div aria-hidden="true" className="orbital-trace orbital-trace--outer" />
       <div aria-hidden="true" className="orbital-trace orbital-trace--inner" />
 
-      <div aria-hidden="true" className="lume-orb animate-orb-breathe">
-        <div className="lume-orb__core" />
-        <div className="lume-orb__mark">
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
-      </div>
+      <MigrationCoreCanvas onReady={setWebglReady} reduceMotion={reduceMotion} ref={coreRef} />
+
+      {!webglReady && (
+        <>
+          <div aria-hidden="true" className="engine-field">
+            <div className="engine-lensing engine-lensing--outer" />
+            <div className="engine-lensing engine-lensing--inner" />
+            <div className="engine-accretion">
+              <div className="engine-accretion__stream engine-accretion__stream--one" />
+              <div className="engine-accretion__stream engine-accretion__stream--two" />
+            </div>
+            <div className="engine-event-horizon" />
+            <div className="engine-escape-particle" />
+          </div>
+
+          <div aria-hidden="true" className="engine-particles">
+            {engineParticles.map((particle, index) => (
+              <span
+                className={`engine-particle engine-particle--${particle.tone}`}
+                key={`${particle.angle}-${index}`}
+                style={
+                  {
+                    '--particle-angle': particle.angle,
+                    '--particle-delay': particle.delay,
+                    '--particle-duration': particle.duration,
+                    '--particle-radius': particle.radius,
+                    '--particle-size': particle.size,
+                  } as CSSProperties
+                }
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       {processNodes.map((node, index) => {
         const Icon = node.icon;

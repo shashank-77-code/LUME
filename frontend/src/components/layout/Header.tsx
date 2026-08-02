@@ -8,6 +8,14 @@ import { BrandMark } from '../ui/BrandMark';
 export function Header() {
   const isWorkspace = window.location.pathname.startsWith('/workspace');
   const [activeSection, setActiveSection] = useState(isWorkspace ? 'workspace' : 'architecture');
+  const [isScrolled, setIsScrolled] = useState(() => window.scrollY > 12);
+
+  useEffect(() => {
+    const updateScrollState = () => setIsScrolled(window.scrollY > 12);
+    updateScrollState();
+    window.addEventListener('scroll', updateScrollState, { passive: true });
+    return () => window.removeEventListener('scroll', updateScrollState);
+  }, []);
 
   useEffect(() => {
     if (isWorkspace) return;
@@ -29,7 +37,7 @@ export function Header() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 lg:px-9">
-      <div className="mx-auto flex h-16 max-w-[90rem] items-center justify-between rounded-2xl border border-line bg-surface-base/85 px-4 shadow-[0_1rem_3rem_rgb(0_0_0_/_28%)] backdrop-blur-2xl transition-colors sm:px-5">
+      <div className={`mx-auto flex h-16 max-w-[90rem] items-center justify-between rounded-2xl border px-4 backdrop-blur-[12px] transition-[background-color,border-color,box-shadow] duration-200 ease-out sm:px-5 ${isScrolled ? 'border-line/90 bg-surface-base/95 shadow-[0_1rem_3rem_rgb(0_0_0_/_40%)]' : 'border-line bg-surface-base/85 shadow-[0_1rem_3rem_rgb(0_0_0_/_28%)]'}`}>
         <a
           aria-label="LUME home"
           className="group inline-flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange"
