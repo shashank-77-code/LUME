@@ -34,11 +34,10 @@ export interface WorkflowStep {
 }
 
 export const navigationItems: readonly NavigationItem[] = [
-  { label: 'Product', href: '#product' },
-  { label: 'Features', href: '#features' },
-  { label: 'Docs', href: '#workflow' },
-  { label: 'Pricing', href: '#workflow' },
-  { label: 'About', href: '#about' },
+  { label: 'How It Works', href: '#architecture' },
+  { label: 'Migration Demo', href: '#demo' },
+  { label: 'Migration Engine', href: '#engine' },
+  { label: 'Workspace', href: '/workspace' },
 ];
 
 export const trustFeatures: readonly TrustFeature[] = [

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ArrowRight, BookOpenCheck, Cpu } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 
@@ -6,16 +7,44 @@ import { Button } from '../ui/Button';
 import { HeroVisual } from '../visual/HeroVisual';
 
 const copyTransition = { duration: 0.65, ease: [0.16, 1, 0.3, 1] as const };
+const typewriterPhrases = ['OpenAI SDKs', 'Anthropic SDKs', 'Gemini SDKs', 'Azure OpenAI', 'Python Projects', 'Legacy SDKs'];
 
 export function HeroSection() {
   const reduceMotion = useReducedMotion();
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [typedPhrase, setTypedPhrase] = useState(typewriterPhrases[0]);
+  const [typingPhase, setTypingPhase] = useState<'typing' | 'deleting'>('typing');
+
+  useEffect(() => {
+    if (reduceMotion) {
+      return;
+    }
+
+    const phrase = typewriterPhrases[phraseIndex];
+    const delay = typingPhase === 'typing' && typedPhrase === phrase ? 1400 : typingPhase === 'deleting' && typedPhrase.length === 0 ? 25 : typingPhase === 'deleting' ? 24 : 48;
+
+    const timer = window.setTimeout(() => {
+      if (typingPhase === 'typing' && typedPhrase === phrase) {
+        setTypingPhase('deleting');
+      } else if (typingPhase === 'deleting' && typedPhrase.length === 0) {
+        setPhraseIndex((current) => (current + 1) % typewriterPhrases.length);
+        setTypingPhase('typing');
+      } else if (typingPhase === 'typing') {
+        setTypedPhrase(phrase.slice(0, typedPhrase.length + 1));
+      } else {
+        setTypedPhrase(phrase.slice(0, Math.max(0, typedPhrase.length - 1)));
+      }
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [phraseIndex, reduceMotion, typedPhrase, typingPhase]);
 
   return (
     <section className="relative" id="product">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-hero-radial" />
       <div aria-hidden="true" className="hero-grid-mask pointer-events-none absolute inset-x-0 top-0 -z-10 h-full bg-hero-grid bg-[length:4.5rem_4.5rem]" />
 
-      <div className="mx-auto grid min-h-[calc(100svh-5rem)] max-w-[90rem] grid-cols-1 items-center gap-8 px-6 pb-10 pt-14 sm:px-9 md:pb-14 lg:grid-cols-2 lg:gap-4 lg:px-12 lg:pt-16 xl:px-16">
+      <div className="mx-auto grid min-h-[calc(100svh-5rem)] max-w-[90rem] grid-cols-1 items-center gap-8 px-6 pb-10 pt-6 sm:px-9 md:pb-14 lg:grid-cols-2 lg:gap-4 lg:px-12 lg:pt-8 xl:px-16">
         <div className="relative z-10 max-w-2xl lg:pb-12">
           <motion.div
             animate={{ opacity: 1, y: 0 }}
@@ -29,12 +58,13 @@ export function HeroSection() {
 
           <motion.h1
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-[13ch] font-display text-[clamp(3rem,5.6vw,5.85rem)] font-extrabold leading-[0.99] tracking-[-0.065em] text-ink-primary"
+            aria-live="polite"
+            className="max-w-[13ch] font-display text-[clamp(3rem,5.6vw,5.85rem)] font-extrabold leading-[0.99] tracking-[-0.065em] text-ink-primary dream-glow"
             initial={{ opacity: 0, y: 20 }}
             transition={{ ...copyTransition, delay: 0.08 }}
           >
-            Migrate OpenAI SDKs. <span className="text-brand-gradient bg-clip-text text-transparent">Automatically.</span>{' '}
-            Accurately.
+            Migrate <span className="text-brand-gradient bg-clip-text text-transparent">{typedPhrase}</span><span aria-hidden="true" className="typewriter-caret" />.<br />
+            Automatically. Accurately.
           </motion.h1>
 
           <motion.p

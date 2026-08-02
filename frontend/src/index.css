@@ -4,9 +4,9 @@
 
 :root {
   --brand-red: #ff3b30;
-  --brand-orange: #ff7a45;
-  --brand-ember: #ffb06a;
-  --surface-base: #050608;
+  --brand-orange: #ff8150;
+  --brand-ember: #ffb77d;
+  --surface-base: #040507;
   --surface-elevated: #0c0f14;
   --surface-panel: #090c11;
   --ink-primary: #f8f9fb;
@@ -61,6 +61,40 @@
 }
 
 @layer components {
+  .dream-glow {
+    text-shadow: 0 0 8px rgb(255 110 60 / 25%), 0 0 18px rgb(255 110 60 / 15%);
+  }
+
+  .typewriter-caret {
+    display: inline-block;
+    width: 0.08em;
+    height: 0.82em;
+    margin-left: 0.1em;
+    transform: translateY(0.08em);
+    background: var(--brand-orange);
+    box-shadow: 0 0 0.7rem var(--brand-orange);
+    animation: caret-blink 1s ease-in-out infinite;
+  }
+
+  .section-ambient {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .section-ambient::before {
+    position: absolute;
+    z-index: -1;
+    top: 8%;
+    left: 50%;
+    width: min(70rem, 92vw);
+    height: 24rem;
+    transform: translateX(-50%);
+    pointer-events: none;
+    background: radial-gradient(ellipse, rgb(255 91 48 / 7%), transparent 68%);
+    filter: blur(2rem);
+    content: '';
+  }
+
   .hero-grid-mask {
     mask-image: linear-gradient(to bottom, black, transparent 78%);
   }
@@ -285,6 +319,11 @@
   }
 }
 
+@keyframes caret-blink {
+  0%, 45% { opacity: 1; }
+  55%, 100% { opacity: 0.2; }
+}
+
 @media (max-width: 63.999rem) {
   .hero-visual {
     max-width: 42rem;
@@ -341,5 +380,10 @@
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .typewriter-caret {
+    animation: none;
+    opacity: 1;
   }
 }

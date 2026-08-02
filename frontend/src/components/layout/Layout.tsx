@@ -5,5 +5,5 @@ export interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  return <main className="relative isolate overflow-hidden">{children}</main>;
+  return <main className="relative isolate overflow-hidden pt-20">{children}</main>;
 }
