@@ -71,6 +71,33 @@
 }
 
 @layer components {
+  .workspace-scrollbar {
+    scroll-behavior: smooth;
+    scrollbar-color: rgb(74 84 99 / 80%) rgb(255 255 255 / 4%);
+    scrollbar-width: thin;
+  }
+
+  .workspace-scrollbar::-webkit-scrollbar {
+    width: 0.45rem;
+    height: 0.45rem;
+  }
+
+  .workspace-scrollbar::-webkit-scrollbar-track {
+    background: rgb(255 255 255 / 4%);
+  }
+
+  .workspace-scrollbar::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background: rgb(74 84 99 / 80%);
+    background-clip: padding-box;
+  }
+
+  .workspace-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(255 129 80 / 75%);
+    background-clip: padding-box;
+  }
+
   .dream-glow {
     text-shadow: 0 0 8px rgb(255 110 60 / 25%), 0 0 18px rgb(255 110 60 / 15%);
   }
