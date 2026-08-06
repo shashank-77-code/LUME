@@ -8,6 +8,9 @@
 
 LUME is a deterministic developer tool that analyzes Python projects and helps migrate OpenAI Python SDK 0.x usage toward the 1.x client-based API.
 
+#Live Demo:
+https://lume-shashank-77-codes-projects.vercel.app/
+
 ## Overview
 
 OpenAI Python SDK migrations can affect imports, global configuration, resource namespaces, asynchronous clients, image and audio APIs, and exception types. A simple search-and-replace often produces incomplete code or misses patterns that only fail at runtime.
@@ -92,7 +95,6 @@ npm run dev
 The frontend reads its backend URL from `VITE_API_URL`. Copy `frontend/.env.example` to `.env` or `.env.local` when a custom API URL is needed:
 
 ```dotenv
-[VITE_API_URL=http://localhost:8000/ap](https://lume-shashank-77-codes-projects.vercel.app/)
 ```
 
 If `VITE_API_URL` is not set, the frontend uses `http://localhost:8000/api`.
