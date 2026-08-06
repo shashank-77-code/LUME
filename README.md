@@ -92,7 +92,7 @@ npm run dev
 The frontend reads its backend URL from `VITE_API_URL`. Copy `frontend/.env.example` to `.env` or `.env.local` when a custom API URL is needed:
 
 ```dotenv
-VITE_API_URL=http://localhost:8000/api
+[VITE_API_URL=http://localhost:8000/ap](https://lume-shashank-77-codes-projects.vercel.app/)
 ```
 
 If `VITE_API_URL` is not set, the frontend uses `http://localhost:8000/api`.
