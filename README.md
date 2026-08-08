@@ -13,7 +13,7 @@ https://lume-shashank-77-codes-projects.vercel.app/
 
 ## Overview
 
-OpenAI Python SDK migrations can affect imports, global configuration, resource namespaces, asynchronous clients, image and audio APIs, and exception types. A simple search-and-replace often produces incomplete code or misses patterns that only fail at runtime.
+OpenAI Python SDK Migrations can affect Imports, Global configuration, Resource namespaces, Asynchronous clients, image and audio APIs, and exception types. A simple search-and-replace often produces incomplete code or misses patterns that only fail at runtime
 
 LUME maps legacy usage with Python's AST, applies supported deterministic codemods, verifies the transformed source can be parsed as Python, and presents the results in a web dashboard. It is designed to make migration work easier to inspect and review, not to claim semantic correctness automatically.
 
